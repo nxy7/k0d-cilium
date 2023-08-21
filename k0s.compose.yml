@@ -1,0 +1,28 @@
+services:
+  k0s:
+    container_name: k0s
+    image: docker.io/k0sproject/k0s:v1.27.4-k0s.0
+    command: k0s controller --config=/etc/k0s/config.yaml --single
+    # command: k0s controller --enable-worker --single
+    hostname: k0s
+    privileged: true
+    cgroup: host
+    volumes:
+      - /var/lib/k0s
+      - ./k0sconfig.yaml:/etc/k0s/config.yaml
+      - /sys/fs/cgroup:/sys/fs/cgroup
+      - /run/cilium/cgroupv2:/run/cilium/cgroupv2:shared
+      - /sys/fs/bpf:/sys/fs/bpf:shared
+    tmpfs:
+      - /run
+      - /var/run
+    ports:
+      - "6443:6443"
+      - "80:80"
+      - "443:443"
+    network_mode: "bridge"
+  # i didnt figure out if there's any easy way to make multiple workers run from one compose file
+  # worker1:
+  #   container_name: worker1
+  #   image: docker.io/k0sproject/k0s:latest
+  #   hostname: worker1

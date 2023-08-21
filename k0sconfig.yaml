@@ -1,0 +1,46 @@
+apiVersion: k0s.k0sproject.io/v1beta1
+kind: ClusterConfig
+metadata:
+  name: k0s
+spec:
+  api:
+    sans:
+      - 127.0.0.1
+      - k0s
+  extensions:
+    helm:
+      repositories:
+        - name: cilium
+          url: https://helm.cilium.io/
+      charts:
+        - name: cilium
+          chartname: cilium/cilium
+          version: "1.14.1"
+          namespace: kube-system
+          values: |
+            kubeProxyReplacement: true
+            k8sServiceHost: 127.0.0.1
+            k8sServicePort: 6443
+            hostServices:
+              enabled: false
+            externalIPs:
+              enabled: true
+            nodePort:
+              enabled: true
+            hostPort:
+              enabled: true
+            gatewayAPI:
+              enabled: true
+            image:
+              pullPolicy: IfNotPresent
+            ipam:
+              mode: kubernetes
+            hubble:
+              enabled: true
+              relay:
+                enabled: true
+            kubeProxyReplacement: strict
+  network:
+    provider: custom
+    kubeProxy:
+      disabled: true
