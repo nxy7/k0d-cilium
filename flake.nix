@@ -1,19 +1,19 @@
 {
   description = "Project starter";
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    flakeUtils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "nixpkgs/nixos-unstable";
+    flake-parts.url = "github:hercules-ci/flake-parts";
     nix2container.url = "github:nlewo/nix2container";
   };
 
-  outputs = { self, nixpkgs, flakeUtils, nix2container, ... }@inputs:
-    flakeUtils.lib.eachSystem [ "x86_64-linux" ] (system:
-      let
-        pkgs = import nixpkgs {
-          inherit system;
-          config.allowUnfree = true;
+  outputs = { flake-parts, nixpkgs, ... }@inputs:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = [ "x86_64-linux" ];
+      perSystem = { config, system, ... }:
+        let pkgs = import nixpkgs { inherit system; };
+        in {
+          devShells.default =
+            pkgs.mkShell { packages = with pkgs; [ nushell cilium-cli ]; };
         };
-      in {
-        devShell = pkgs.mkShell { packages = with pkgs; [ nushell k9s ]; };
-      });
+    };
 }

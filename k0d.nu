@@ -5,6 +5,11 @@ use utils.nu
 export def create [] {
   cd (utils project-root)
   docker compose -f k0s.compose.yml up -d
+
+  print waiting 5sec so k0s becomes ready..;
+  docker exec k0s mount -t cgroup2 none /run/cilium/cgroupv2
+
+
 }
 
 # created k0s cluster in docker

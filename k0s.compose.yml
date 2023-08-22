@@ -7,22 +7,18 @@ services:
     hostname: k0s
     privileged: true
     cgroup: host
+    # cgroup_parent: docker-k0s.slice
     volumes:
-      - /var/lib/k0s
       - ./k0sconfig.yaml:/etc/k0s/config.yaml
+      - /var/lib/k0s
       - /sys/fs/cgroup:/sys/fs/cgroup
       - /run/cilium/cgroupv2:/run/cilium/cgroupv2:shared
       - /sys/fs/bpf:/sys/fs/bpf:shared
-    tmpfs:
-      - /run
-      - /var/run
+    # tmpfs:
+      # - /run
+      # - /var/run
     ports:
       - "6443:6443"
       - "80:80"
       - "443:443"
     network_mode: "bridge"
-  # i didnt figure out if there's any easy way to make multiple workers run from one compose file
-  # worker1:
-  #   container_name: worker1
-  #   image: docker.io/k0sproject/k0s:latest
-  #   hostname: worker1
