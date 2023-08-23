@@ -4,6 +4,7 @@ metadata:
   name: k0s
 spec:
   api:
+    address: 0.0.0.0
     sans:
       - 127.0.0.1
       - k0s
@@ -21,6 +22,8 @@ spec:
             kubeProxyReplacement: true
             k8sServiceHost: 127.0.0.1
             k8sServicePort: 6443
+            operator:
+              replicas: 1
             hostServices:
               enabled: false
             externalIPs:
@@ -37,9 +40,10 @@ spec:
               mode: kubernetes
             hubble:
               enabled: true
+              ui:
+                enabled: true
               relay:
                 enabled: true
-            kubeProxyReplacement: strict
   network:
     provider: custom
     kubeProxy:
