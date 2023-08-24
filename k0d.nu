@@ -6,20 +6,21 @@ export def create [] {
   cd (utils project-root);
   docker compose -f k0s.compose.yml up -d;
 
-  print "waiting till k0s becomes available";
+  print "Waiting till cilium becomes available..";
   loop {
-    copy-kubeconfig;
-    if ((do {kubectl get all} | str contains service/kubernetes) == true) {
-      print "cluster ready for futhurer setup";
+    try {
+      (docker exec k0s mount -t cgroup2 none /run/cilium/cgroupv2);
+    };
+   copy-kubeconfig;
+    if (
+      do { kubectl get ds -n kube-system } | complete | if ($in.exit_code == 0) {$in.stdout} | from ssv | where NAME == cilium | $in.0? | $in != $nothing and $in.DESIRED == $in.READY != 0
+    ) {
       break;
     }
-    # print "sleep"
-    sleep 1sec;
+      sleep 1sec;
   }
   
-  try {
-    docker exec k0s mount -t cgroup2 none /run/cilium/cgroupv2;
-  };
+  
 
   try {
     let regConfig = 'version = 2
@@ -39,14 +40,6 @@ export def create [] {
   
 
   kubectl apply -f https://openebs.github.io/charts/openebs-operator.yaml
-
-
-   kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml;
-  kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml;
-  kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml;
-  kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml;
-  kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml;
-
   init-cert-manager
 }
 

@@ -10,13 +10,14 @@ services:
     # cgroup_parent: docker-k0s.slice
     volumes:
       - ./k0sconfig.yaml:/etc/k0s/config.yaml
+      - ./manifests:/var/lib/k0s/manifests/gatewayCRDs
       - /var/lib/k0s
-      - /sys/fs/cgroup:/sys/fs/cgroup
+      - /sys/fs/cgroup:/sys/fs/cgroup:shared
       - /run/cilium/cgroupv2:/run/cilium/cgroupv2:shared
       - /sys/fs/bpf:/sys/fs/bpf:shared
-    # tmpfs:
-      # - /run
-      # - /var/run
+    tmpfs:
+    - /run
+    - /var/run
     ports:
       - "6443:6443"
       - "80:80"
