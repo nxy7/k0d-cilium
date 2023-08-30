@@ -14,6 +14,7 @@ services:
       - /var/lib/k0s
       - /sys/fs/cgroup:/sys/fs/cgroup:shared
       - /run/cilium/cgroupv2:/run/cilium/cgroupv2:shared
+      - /run/udev:/run/udev
       - /sys/fs/bpf:/sys/fs/bpf:shared
     tmpfs:
     - /run

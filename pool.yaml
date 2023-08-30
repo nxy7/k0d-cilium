@@ -4,5 +4,5 @@ metadata:
   name: "blue-pool"
 spec:
   cidrs:
-  - cidr: "172.17.0.2/16"
+  - cidr: "172.17.0.2/30"
 

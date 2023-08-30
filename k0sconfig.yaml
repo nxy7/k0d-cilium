@@ -4,7 +4,8 @@ metadata:
   name: k0s
 spec:
   api:
-    # address: 0.0.0.0
+    address: 0.0.0.0
+    # externalAddress: 172.17.0.2
     sans:
       - 127.0.0.1
       - k0s
@@ -24,8 +25,19 @@ spec:
             k8sServicePort: 6443
             operator:
               replicas: 1
-            hostServices:
+            l2announcements:
               enabled: true
+            # hostServices:
+            #   enabled: true
+            bgpControlPlane:
+              enabled: true
+              announce:
+                loadbalancerIP: true
+                podCIDR: true
+            # routingMode: native
+            # loadbalancer:
+              # acceleration: native
+            l7Proxy: true 
             externalIPs:
               enabled: true
             nodePort:
@@ -37,7 +49,7 @@ spec:
             image:
               pullPolicy: IfNotPresent
             ipam:
-              mode: cluster-pool
+              mode: kubernetes
             ipv4:
               enabled: true
             ipv6:

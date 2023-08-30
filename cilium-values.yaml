@@ -1,0 +1,39 @@
+kubeProxyReplacement: true
+k8sServiceHost: 127.0.0.1
+k8sServicePort: 6443
+operator:
+  replicas: 1
+# hostServices:
+#   enabled: true
+bgpControlPlane:
+  enabled: true
+  announce:
+    loadbalancerIP: true
+#     podCIDR: true
+# routingMode: native
+# loadbalancer:
+  # acceleration: native
+l7Proxy: true 
+externalIPs:
+  enabled: true
+nodePort:
+  enabled: true
+hostPort:
+  enabled: true
+gatewayAPI:
+  enabled: true
+image:
+  pullPolicy: IfNotPresent
+ipam:
+  mode: kubernetes
+ipv4:
+  enabled: true
+ipv6:
+  enabled: false
+hubble:
+  enabled: true
+  ui:
+    enabled: true
+  relay:
+    enabled: true
+
