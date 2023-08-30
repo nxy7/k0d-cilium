@@ -29,20 +29,6 @@ export def create [] {
       sleep 1sec;
   }
   
-  #  kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml
-  #  kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
-  #  kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml
-  #  kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml
-  #  kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml
-
-  # (helm repo add cilium https://helm.cilium.io/)
-  # (helm install cilium cilium/cilium 
-  #   --version 1.14.1 
-  #   --namespace kube-system
-  #   -f cilium-values.yaml)
-
-  
-
   try {
     let regConfig = 'version = 2
 [plugins]
@@ -78,9 +64,14 @@ export def delete [] {
 }
 
 export def init-cert-manager [] {
-    kubectl apply -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.crds.yaml
+    # kubectl apply -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.crds.yaml
     helm repo add jetstack https://charts.jetstack.io
     helm repo update
-    kubectl create ns cert-manager
-    helm install cert-manager --namespace cert-manager jetstack/cert-manager
+    (helm install cert-manager 
+      --version v1.10.0
+      --namespace cert-manager 
+      --set installCRDs=true
+      --create-namespace
+      --set "extraArgs={--feature-gates=ExperimentalGatewayAPISupport=true}"
+      jetstack/cert-manager)
 }
