@@ -29,16 +29,22 @@ spec:
               replicas: 1
             l2announcements:
               enabled: true
+            l2podAnnouncements:
+              enabled: true
+              interface: eth0
             # hostServices:
             #   enabled: true
-            bgpControlPlane:
-              enabled: true
-              announce:
-                loadbalancerIP: true
-                podCIDR: true
+            # bgpControlPlane:
+            #   enabled: true
+            #   announce:
+            #     loadbalancerIP: true
+            #     podCIDR: true
             # routingMode: native
             # loadbalancer:
               # acceleration: native
+            l2announcements:
+              enabled: true
+            devices: "eth0"
             l7Proxy: true 
             externalIPs:
               enabled: true

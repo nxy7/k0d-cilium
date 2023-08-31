@@ -17,12 +17,13 @@ export def create [] {
 
   print "Waiting till cilium becomes available..";
   loop {
-   copy-kubeconfig;
-    try {
-      (docker exec k0s mount -t cgroup2 none /run/cilium/cgroupv2);
-    };
+    let _ = copy-kubeconfig;
+    let _ = mount-cgroupv2;
+    let _ = try {
+      install-gateway-crds
+    }
     if (
-      kubectl get svc | str contains kubernetes
+      do { kubectl get svc } | complete | $in.exit_code == 0
     ) {
       break;
     }
@@ -46,21 +47,41 @@ export def create [] {
   };
   
 
-  kubectl apply -f https://openebs.github.io/charts/openebs-operator.yaml
-  init-cert-manager
-  kubectl apply -f pool.yaml
-  kubectl apply -f bgppolicy.yaml
+let _ = (  kubectl apply -f https://openebs.github.io/charts/openebs-operator.yaml;
+  init-cert-manager;
+  kubectl apply -f pool.yaml;
+  kubectl apply -f l2announcment.yaml;
+  # kubectl apply -f bgppolicy.yaml;
+)
+  print "cluster initiated"
 }
 
 # created k0s cluster in docker
 export def copy-kubeconfig [] {
-  do { docker exec k0s cat /var/lib/k0s/pki/admin.conf | save ~/.kube/config --force }
+  try {
+    do { docker exec k0s cat /var/lib/k0s/pki/admin.conf | save ~/.kube/config --force }
+  }
 }
 
 # deletes k0s cluster
 export def delete [] {
   cd (utils project-root)
   docker compose -f k0s.compose.yml down
+}
+
+export def mount-cgroupv2 [] {
+  try {
+    do {docker exec k0s mount -t cgroup2 none /run/cilium/cgroupv2} | complete
+  };
+
+}
+
+def install-gateway-crds [] {
+  kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.8.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml
+  kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.8.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
+  kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.8.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml
+  kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.8.0/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml
+  kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.8.0/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml
 }
 
 export def init-cert-manager [] {
