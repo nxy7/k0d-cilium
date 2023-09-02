@@ -4,11 +4,15 @@ metadata:
   name: k0s
 spec:
   api:
-    # address: 0.0.0.0
+    address: 172.17.0.2
+    port: 6443
     # externalAddress: 172.17.0.2
     sans:
-      - 127.0.0.1
-      - k0s
+      - 172.17.0.2
+      - 172.17.0.3
+      - 172.17.0.4
+      - 172.17.0.5
+      - 10.96.0.1
   extensions:
     helm:
       repositories:
@@ -17,14 +21,18 @@ spec:
       charts:
         - name: cilium
           chartname: cilium/cilium
-          version: "1.14.1"
+          version: "1.15.0-pre.0"
+          # version: "1.14.1"
           namespace: kube-system
           values: |
             kubeProxyReplacement: true
-            k8sServiceHost: 127.0.0.1
+            k8sServiceHost: 172.17.0.2
             k8sServicePort: 6443
-            debug:
+            envoy:
               enabled: true
+            # debug:
+            #   enabled: true
+            #   verbose: flow
             operator:
               replicas: 1
             l2announcements:
@@ -32,27 +40,19 @@ spec:
             l2podAnnouncements:
               enabled: true
               interface: eth0
-            # hostServices:
-            #   enabled: true
-            # bgpControlPlane:
-            #   enabled: true
-            #   announce:
-            #     loadbalancerIP: true
-            #     podCIDR: true
-            # routingMode: native
-            # loadbalancer:
-              # acceleration: native
             l2announcements:
               enabled: true
+            bpf:
+              masquerade: true
             devices: "eth0"
             l7Proxy: true 
             externalIPs:
               enabled: true
             nodePort:
               enabled: true
-            hostPort:
-              enabled: true
             gatewayAPI:
+              enabled: true
+            ingressController:
               enabled: true
             image:
               pullPolicy: IfNotPresent
@@ -72,3 +72,5 @@ spec:
     provider: custom
     kubeProxy:
       disabled: true
+  storage:
+    type: kine
