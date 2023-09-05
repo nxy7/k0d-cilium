@@ -12,6 +12,8 @@ export def restart [] {
 
 # created k0s cluster in docker
 export def create [] {
+  load-kernel-modules
+
   cd (utils project-root);
   docker compose -f k0s.compose.yml up -d;
 
@@ -29,16 +31,13 @@ export def create [] {
       sleep 1sec;
     }
   }
-  let _ = mount-cgroupv2;
-  let _ = install-gateway-crds
-  
-    # add-insecure-registry  
 
-    let _ = kubectl apply -f https://openebs.github.io/charts/openebs-operator.yaml;
-    init-cert-manager;
-    kubectl apply -f pool.yaml;
-    kubectl apply -f l2announcment.yaml;
-    # kubectl apply -f bgppolicy.yaml;
+  let _ = mount-cgroupv2;
+  
+  let _ = kubectl apply -f https://openebs.github.io/charts/openebs-operator.yaml;
+  init-cert-manager;
+  kubectl apply -f pool.yaml;
+  kubectl apply -f l2announcment.yaml;
   
   print "cluster initiated"
 }
@@ -50,18 +49,43 @@ export def copy-kubeconfig [] {
   }
 }
 
+# cilium requires some kernel modules to be preloaded
+export def load-kernel-modules [] {
+  sudo modprobe ip6table_filter -v
+  sudo modprobe iptable_raw -v
+  sudo modprobe iptable_nat -v
+  sudo modprobe iptable_filter -v
+  sudo modprobe iptable_mangle -v
+  sudo modprobe ip_set -v
+  sudo modprobe ip_set_hash_ip -v
+  sudo modprobe xt_socket -v
+  sudo modprobe xt_mark -v
+  sudo modprobe xt_set -v
+}
+
 # deletes k0s cluster
 export def delete [] {
   cd (utils project-root)
   docker compose -f k0s.compose.yml down --remove-orphans
 }
 
+
+# export def mount-cgroupv2 [] {
+#   try {
+#     do {docker exec k0s mount --make-shared -t cgroup2 none /run/cilium/cgroupv2} | complete
+#   };
+# }
 export def mount-cgroupv2 [] {
   try {
-    do {docker exec k0s mount -t cgroup2 none /run/cilium/cgroupv2} | complete
-  };
-
+    do {
+      sudo mkdir -p /run/cilium/cgroupv2
+      sudo mount --bind -t cgroup2 /run/cilium/cgroupv2 /run/cilium/cgroupv2
+      sudo mount --make-shared /run/cilium/cgroupv2
+      print "Done mounting cgroupv2"
+    } | complete
+  }
 }
+
 
 export def add-insecure-registry [] {
     let regConfig = 'version = 2
@@ -84,13 +108,16 @@ imports = [
   
 }
 
-def install-gateway-crds [] {
-  kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.1/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml
-  kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.1/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
-  kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.1/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml
-  kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.1/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml
-  kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.1/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml
-  print "gateway crds installed"
+export def install-gateway-crds [] {
+  let manifests = [
+    "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml"
+    "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml"
+    "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml"
+    "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml"
+    "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml"    
+  ]
+  $manifests | par-each { kubectl apply -f $in } 
+  # kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v0.8.0/standard-install.yaml
 }
 
 export def init-cert-manager [] {

@@ -2,66 +2,22 @@ services:
   k0s:
     container_name: k0s
     image: docker.io/k0sproject/k0s:v1.27.4-k0s.0
-    command: k0s controller --config=/etc/k0s/config.yaml 
+    command: k0s controller --config=/etc/k0s/config.yaml --single
     hostname: k0s
     privileged: true
-    cgroup: private
+    cgroup: host
     volumes:
       - ./k0sconfig.yaml:/etc/k0s/config.yaml
-      # - ./containerd.toml:/etc/k0s/containerd.toml
+      - ./containerd.toml:/etc/k0s/containerd.toml
+      - ./manifests/gatewayCrds:/var/lib/k0s/manifests/gtw
       - /var/lib/k0s
-      - ./tokens/controller/ca.key:/var/lib/k0s/pki/ca.key
-      - ./tokens/controller/ca.crt:/var/lib/k0s/pki/ca.crt
-      - ./manifests/secrets:/var/lib/k0s/manifests/secrets
-      - /sys/fs/cgroup:/sys/fs/cgroup:shared
-      - /run/cilium/cgroupv2:/run/cilium/cgroupv2:shared
-      - /run/udev:/run/udev:shared
+
+      # - /sys/fs/cgroup:/sys/fs/cgroup:shared
+      - /sys/fs/cgroup:/run/cilium/cgroupv2:shared
+      - /run/udev:/run/udev:slave
       - /sys/fs/bpf:/sys/fs/bpf:shared
-    tmpfs:
-    - /var/run
     ports:
       - "6443:6443"
       - "80:80"
       - "443:443"
     network_mode: "bridge"
-  k0s-worker1:
-    container_name: k0s-worker1
-    image: docker.io/k0sproject/k0s:v1.27.4-k0s.0
-    command: k0s worker --token-file /token
-    hostname: k0s-worker1
-    privileged: true
-    cgroup: private
-    volumes:
-      - ./tokens/worker1/token:/token
-      - ./containerd.toml:/etc/k0s/containerd.toml
-      - /var/lib/k0s
-      - /sys/fs/cgroup:/sys/fs/cgroup:shared
-      - /run/cilium/cgroupv2:/run/cilium/cgroupv2:shared
-      - /run/udev:/run/udev:shared
-      - /sys/fs/bpf:/sys/fs/bpf:shared
-    depends_on:
-      - k0s
-    tmpfs:
-    - /var/run
-    network_mode: "bridge"
-  k0s-worker2:
-    container_name: k0s-worker2
-    image: docker.io/k0sproject/k0s:v1.27.4-k0s.0
-    command: k0s worker --token-file /token
-    hostname: k0s-worker2
-    privileged: true
-    cgroup: private
-    volumes:
-      - ./tokens/worker2/token:/token
-      - ./containerd.toml:/etc/k0s/containerd.toml
-      - /var/lib/k0s
-      - /sys/fs/cgroup:/sys/fs/cgroup:shared
-      - /run/cilium/cgroupv2:/run/cilium/cgroupv2:shared
-      - /run/udev:/run/udev:shared
-      - /sys/fs/bpf:/sys/fs/bpf:shared
-    depends_on:
-      - k0s
-    tmpfs:
-    - /var/run
-    network_mode: "bridge"
-

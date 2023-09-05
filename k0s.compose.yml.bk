@@ -1,0 +1,17 @@
+services:
+  k0s:
+    container_name: k0s
+    image: docker.io/k0sproject/k0s:v1.27.4-k0s.0
+    command: k0s controller --config=/etc/k0s/config.yaml --enable-worker --single
+    hostname: k0s
+    volumes:
+      - ./k0sconfig.yaml:/etc/k0s/config.yaml
+      - ./containerd.toml:/etc/k0s/containerd.toml
+      - ./tokens/controller/ca.key:/var/lib/k0s/pki/ca.key
+      - ./tokens/controller/ca.crt:/var/lib/k0s/pki/ca.crt
+      - /var/lib/k0s
+    ports:
+      - "6443:6443"
+      - "80:80"
+      - "443:443"
+    network_mode: "bridge"
