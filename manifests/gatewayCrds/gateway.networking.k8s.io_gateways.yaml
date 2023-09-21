@@ -3,7 +3,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     api-approved.kubernetes.io: https://github.com/kubernetes-sigs/gateway-api/pull/1923
-    gateway.networking.k8s.io/bundle-version: v0.7.0
+    gateway.networking.k8s.io/bundle-version: v0.7.1
     gateway.networking.k8s.io/channel: standard
   creationTimestamp: null
   name: gateways.gateway.networking.k8s.io
@@ -379,11 +379,12 @@ spec:
                               namespace:
                                 description: "Namespace is the namespace of the backend.
                                   When unspecified, the local namespace is inferred.
-                                  \n Note that when a namespace is specified, a ReferenceGrant
-                                  object is required in the referent namespace to
-                                  allow that namespace's owner to accept the reference.
-                                  See the ReferenceGrant documentation for details.
-                                  \n Support: Core"
+                                  \n Note that when a namespace different than the
+                                  local namespace is specified, a ReferenceGrant object
+                                  is required in the referent namespace to allow that
+                                  namespace's owner to accept the reference. See the
+                                  ReferenceGrant documentation for details. \n Support:
+                                  Core"
                                 maxLength: 63
                                 minLength: 1
                                 pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
@@ -585,8 +586,8 @@ spec:
                   description: ListenerStatus is the status associated with a Listener.
                   properties:
                     attachedRoutes:
-                      description: AttachedRoutes represents the total number of Routes
-                        that have been successfully attached to this Listener.
+                      description: AttachedRoutes represents the total number of accepted
+                        Routes that have been successfully attached to this Listener.
                       format: int32
                       type: integer
                     conditions:
@@ -1081,11 +1082,12 @@ spec:
                               namespace:
                                 description: "Namespace is the namespace of the backend.
                                   When unspecified, the local namespace is inferred.
-                                  \n Note that when a namespace is specified, a ReferenceGrant
-                                  object is required in the referent namespace to
-                                  allow that namespace's owner to accept the reference.
-                                  See the ReferenceGrant documentation for details.
-                                  \n Support: Core"
+                                  \n Note that when a namespace different than the
+                                  local namespace is specified, a ReferenceGrant object
+                                  is required in the referent namespace to allow that
+                                  namespace's owner to accept the reference. See the
+                                  ReferenceGrant documentation for details. \n Support:
+                                  Core"
                                 maxLength: 63
                                 minLength: 1
                                 pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
@@ -1287,8 +1289,8 @@ spec:
                   description: ListenerStatus is the status associated with a Listener.
                   properties:
                     attachedRoutes:
-                      description: AttachedRoutes represents the total number of Routes
-                        that have been successfully attached to this Listener.
+                      description: AttachedRoutes represents the total number of accepted
+                        Routes that have been successfully attached to this Listener.
                       format: int32
                       type: integer
                     conditions:

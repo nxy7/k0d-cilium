@@ -37,6 +37,7 @@ export def create [] {
   let _ = kubectl apply -f https://openebs.github.io/charts/openebs-operator.yaml;
   init-cert-manager;
   kubectl apply -f pool.yaml;
+  # fix-gtw-addr
   kubectl apply -f l2announcment.yaml;
   
   print "cluster initiated"
@@ -110,11 +111,11 @@ imports = [
 
 export def install-gateway-crds [] {
   let manifests = [
-    "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml"
-    "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml"
-    "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml"
-    "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml"
-    "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.0/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml"    
+    "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.1/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml"
+    "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.1/config/crd/standard/gateway.networking.k8s.io_gateways.yaml"
+    "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.1/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml"
+    "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.1/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml"
+    "https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.7.1/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml"    
   ]
   $manifests | par-each { kubectl apply -f $in } 
   # kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v0.8.0/standard-install.yaml
@@ -124,6 +125,7 @@ export def init-cert-manager [] {
     # kubectl apply -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.crds.yaml
     helm repo add jetstack https://charts.jetstack.io
     helm repo update
+
     (helm install cert-manager 
       --version v1.10.0
       --namespace cert-manager 
@@ -131,4 +133,11 @@ export def init-cert-manager [] {
       --create-namespace
       --set "extraArgs={--feature-gates=ExperimentalGatewayAPISupport=true}"
       jetstack/cert-manager)
+
+    kubectl apply -f https://raw.githubusercontent.com/cilium/cilium/HEAD/examples/kubernetes/servicemesh/ca-issuer.yaml
+}
+
+export def fix-gtw-addr [] {
+  kubectl delete -f pool.yaml; kubectl apply -f pool.yaml
+  kubectl get gtw -A | from ssv | get 0 | if ($in.ADDRESS != "172.17.0.2") {print "Fixing gtw address"; fix-gtw-addr;} else {print "Gateway ready"}
 }
