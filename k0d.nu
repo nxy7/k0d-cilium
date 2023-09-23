@@ -1,6 +1,7 @@
 #!/usr/bin/env nu
 use utils.nu
 
+# restarts k0d cluster
 export def main [] {
   restart
 }
@@ -17,6 +18,24 @@ export def create [] {
   cd (utils project-root);
   docker compose -f k0s.compose.yml up -d;
 
+  wait-for-cluster
+  mount-cgroupv2;
+  print "Cluster ready.."
+
+  use k8s_utils/kubernetes.nu;
+  enter k8s_utils
+  kubernetes install-gateway-crds
+  kubernetes install-cilium
+  kubernetes install-openebs
+  kubernetes install-certmanager
+  dexit
+
+  kubectl apply -f gateway.yaml
+  ./k8s_utils/annotate-gateways.nu --ip 172.17.0.2 --ipPool 172.17.0.2/24
+  
+}
+
+export def wait-for-cluster [] {
   print "Waiting till cluster becomes available..";
   loop {
     try {
@@ -31,10 +50,6 @@ export def create [] {
       sleep 1sec;
     }
   }
-
-  mount-cgroupv2;
-  print "Cluster ready.."
-  print "You can initiate cilium with gateway api and openEBS using github.com/nxy7/k8s_utils repo"
 }
 
 # created k0s cluster in docker
