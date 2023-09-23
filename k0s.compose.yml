@@ -9,7 +9,7 @@ services:
     volumes:
       - ./k0sconfig.yaml:/etc/k0s/config.yaml
       - ./containerd.toml:/etc/k0s/containerd.toml
-      - ./manifests/gatewayCrds:/var/lib/k0s/manifests/gtw
+      # - ./manifests/gatewayCrds:/var/lib/k0s/manifests/gtw
       - /var/lib/k0s
 
       # - /sys/fs/cgroup:/sys/fs/cgroup:shared

@@ -1,0 +1,16 @@
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: gateway
+  namespace: default
+  annotations:
+    "cert-manager.io/cluster-issuer": "ca-issuer"
+spec:
+  gatewayClassName: cilium
+  listeners:
+    - protocol: HTTP
+      port: 80
+      name: chat-app-http
+      allowedRoutes:
+        namespaces:
+          from: All

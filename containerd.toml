@@ -1,6 +1,5 @@
 version = 2
 
-# imports = ["/run/k0s/containerd-cri.toml"]
 root = "/var/lib/k0s/containerd"
 state = "/var/lib/k0s/run/containerd"
 
