@@ -13,7 +13,8 @@ export def restart [] {
 
 # created k0s cluster in docker
 export def create [] {
-  load-kernel-modules
+  use k8s_utils/kubernetes.nu;
+  kubernetes load-kernel-modules
 
   cd (utils project-root);
   docker compose -f k0s.compose.yml up -d;
@@ -22,7 +23,6 @@ export def create [] {
   mount-cgroupv2;
   print "Cluster ready.."
 
-  use k8s_utils/kubernetes.nu;
   enter k8s_utils
   kubernetes install-gateway-crds
   kubernetes install-cilium
@@ -59,19 +59,6 @@ export def copy-kubeconfig [] {
   }
 }
 
-# cilium requires some kernel modules to be preloaded
-export def load-kernel-modules [] {
-  sudo modprobe ip6table_filter -v
-  sudo modprobe iptable_raw -v
-  sudo modprobe iptable_nat -v
-  sudo modprobe iptable_filter -v
-  sudo modprobe iptable_mangle -v
-  sudo modprobe ip_set -v
-  sudo modprobe ip_set_hash_ip -v
-  sudo modprobe xt_socket -v
-  sudo modprobe xt_mark -v
-  sudo modprobe xt_set -v
-}
 
 # deletes k0s cluster
 export def delete [] {
