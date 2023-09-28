@@ -4,6 +4,7 @@ metadata:
   name: k0s
 spec:
   api:
+    # address: 172.69.2.2
     address: 172.17.0.2
     port: 6443
     # externalAddress: 172.17.0.2
